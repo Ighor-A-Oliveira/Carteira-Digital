@@ -7,6 +7,35 @@ API REST de carteira digital desenvolvida como teste técnico para processo de e
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15+-blue)](https://www.postgresql.org/)
 [![Maven](https://img.shields.io/badge/Maven-3.9+-blue)](https://maven.apache.org/)
 
+Projeto construído com boas práticas de desenvolvimento backend, arquitetura em camadas e foco em segurança e consistência de dados.
+
+## 🚀 Principais Destaques
+
+- 🔐 Autenticação e autorização com JWT (access + refresh token com rotação)
+- 🏦 Simulação de operações bancárias (depósito, saque e transferências)
+- 🔄 Transferências externas com validação via API pública
+- 🧱 Arquitetura em camadas (Controller, Service, Repository)
+- 📦 Containerização com Docker e Docker Compose
+- 📊 Auditoria com logs estruturados
+- ✅ Validações de regras de negócio (saldo, dados, consistência)
+
+
+## 🏗️ Arquitetura
+
+A aplicação segue o padrão de arquitetura em camadas:
+
+- Controller: responsável pelas requisições HTTP
+- Service: regras de negócio
+- Repository: acesso ao banco de dados
+
+
+## 🔐 Segurança
+
+- Senhas criptografadas com BCrypt
+- Autenticação via JWT
+- Refresh token com rotação
+- Proteção de rotas com Spring Security
+
 
 ## Funcionalidades implementadas
 - Cadastro de usuários com CPF, nome, email e senha criptografada (BCrypt)
