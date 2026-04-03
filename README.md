@@ -1,6 +1,6 @@
-# Teste Técnico Para Estagio
+# API REST - Carteira Digital (Spring Boot + JWT)
 
-API REST de carteira digital desenvolvida como teste técnico para processo de estagio.
+API REST de carteira digital que simula operações bancárias reais, com foco em segurança, consistência de dados e boas práticas de desenvolvimento backend.
 
 [![Java 17](https://img.shields.io/badge/Java-17-blue)](https://www.oracle.com/java/)
 [![Spring Boot](https://img.shields.io/badge/Spring_Boot-3.3+-green)](https://spring.io/projects/spring-boot)
@@ -43,7 +43,7 @@ A aplicação segue o padrão de arquitetura em camadas:
 - Perfis: USER (padrão) e ADMIN (configurável no banco)
 - Criação de conta digital por usuário: número gerado automaticamente, saldo inicial 0, data de criação e status (ativa/inativa)
 - Transações internas: depósito (positivo), saque (sem negativo), transferência interna (validação de saldo e conta destino)
-- Transações externas: transferência simulada com validação de saldo, consumo da API pública de bancos[](https://brasilapi.com.br/api/banks/v1) para validar código de banco
+- Transações externas: transferência simulada com validação de saldo, consumo da API pública de bancos (https://brasilapi.com.br/api/banks/v1) para validar código de banco
 - Histórico completo de transações: tipo, valor, contas origem/destino, timestamp, saldo pós-operação
 - Auditoria: logs estruturados em console (com usuário, endpoint, data/hora, payload) — pode ser extendido para arquivo ou banco
 - Segurança: JWT para autenticação, criptografia de senha, validações de entrada (valores >0, formatos de CPF, etc.)
@@ -175,6 +175,13 @@ docker-compose down
 ```
 
 > **Aplicação disponível em: http://localhost:8080*  
+
+
+
+## 📌 Observações
+
+Este projeto foi desenvolvido com o objetivo de praticar conceitos de desenvolvimento backend, incluindo segurança, arquitetura em camadas e simulação de regras de negócio reais.
+
 
 
 
