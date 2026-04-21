@@ -156,14 +156,13 @@ spring.jpa.properties.hibernate.default_schema=public
 }
 ```
 
-### Transferencia Externa (O toAccountNumber)
+### Transferencia Externa 
 ```json
 {
   "fromAccountId": 2,   
   "amount": 250.00,                
   "toBankCode": "001",             
-  "toAgency": "0001", 
-  "toAccountNumber": null,             
+  "toAgency": "0001",             
   "externalDestinationAccountNumber": 98181880,     
   "toAccountHolderCpf": "11111111111" 
 }
