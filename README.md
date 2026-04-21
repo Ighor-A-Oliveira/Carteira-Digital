@@ -18,6 +18,7 @@ Projeto construído com boas práticas de desenvolvimento backend, arquitetura e
 - 📦 Containerização com Docker e Docker Compose
 - 📊 Auditoria com logs estruturados
 - ✅ Validações de regras de negócio (saldo, dados, consistência)
+- 🛡️ Tratamento global de erros com `@RestControllerAdvice`
 
 
 ## 🏗️ Arquitetura
@@ -35,6 +36,46 @@ A aplicação segue o padrão de arquitetura em camadas:
 - Autenticação via JWT
 - Refresh token com rotação
 - Proteção de rotas com Spring Security
+  
+
+## 🛡️ Tratamento de Erros
+
+A aplicação possui um `GlobalExceptionHandler` com `@RestControllerAdvice` que intercepta e padroniza todas as respostas de erro da API.
+
+Erros tratados:
+- Conta não encontrada (`AccountNotFoundException`) → `404 Not Found`
+- Usuário não encontrado (`UserNotFoundException`) → `404 Not Found`
+- Erros de dados/regras de negócio (`DataErrorException`) → `400 Bad Request`
+- Validações de `@RequestBody` (`@Valid`) → `422 Unprocessable Entity`
+- Validações de `@RequestParam` e `@PathVariable` → `400 Bad Request`
+- Erros genéricos não mapeados → `500 Internal Server Error`
+
+**Erro simples:**
+```json
+{
+  "status": 400,
+  "error": "Bad Request",
+  "message": "Saldo insuficiente",
+  "fieldErrors": [],
+  "timestamp": "2026-04-21T11:17:28.740"
+}
+```
+
+**Erro de validação:**
+```json
+{
+  "status": 422,
+  "error": "Unprocessable Entity",
+  "message": "Erro de validação nos campos",
+  "fieldErrors": [
+    {
+      "field": "amount",
+      "message": "O valor deve ser maior que zero"
+    }
+  ],
+  "timestamp": "2026-04-21T11:17:28.740"
+}
+```
 
 
 ## Funcionalidades implementadas
@@ -101,8 +142,8 @@ spring.jpa.properties.hibernate.default_schema=public
 | Método | Rota                                   | Descrição                              | Auth     |
 |--------|----------------------------------------|----------------------------------------|----------|
 | **POST** | `/user/register`                     | Cadastra usuário                       | Pública  |
-| **POST** | `/user/login`                        | Login → retorna JWT + refresh token    | Pública  |
 | **POST** | `/account/register`                  | Cria conta bancária (Bom fazer logo apos criar Usuario)                   | JWT      |
+| **POST** | `/user/login`                        | Login → retorna JWT + refresh token    | Pública  |
 | **POST** | `/transaction/deposit`               | Depósito                               | JWT      |
 | **POST** | `/transaction/withdraw`              | Saque                                  | JWT      |
 | **POST** | `/transaction/internal-transfer`     | Transferência interna                  | JWT      |
@@ -130,6 +171,15 @@ spring.jpa.properties.hibernate.default_schema=public
 }
 ```
 
+### Login com a Conta 
+(Depois de logar tem que colocar o JWT Token no header da request, bearer token)
+```json
+{
+  "email": "usuario@email.com",
+  "password": "senha123"
+}
+```
+
 ### Depósito ou Saque
 ```json
 {
@@ -147,14 +197,14 @@ spring.jpa.properties.hibernate.default_schema=public
 }
 ```
 
-### Transferencia Externa
+### Transferencia Externa 
 ```json
 {
   "fromAccountId": 2,   
   "amount": 250.00,                
   "toBankCode": "001",             
-  "toAgency": "0001",              
-  "toAccountNumber": 987654,     
+  "toAgency": "0001",             
+  "externalDestinationAccountNumber": 98181880,     
   "toAccountHolderCpf": "11111111111" 
 }
 ```
