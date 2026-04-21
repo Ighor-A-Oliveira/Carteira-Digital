@@ -12,6 +12,7 @@ public record TransactionResponse(
         BigDecimal amount,
         Long sourceAccountId,
         Long destinationAccountId,
+        Long externalDestinationAccountNumber,
         OffsetDateTime timestamp,
         BigDecimal balanceAfterOperation
 ) {}

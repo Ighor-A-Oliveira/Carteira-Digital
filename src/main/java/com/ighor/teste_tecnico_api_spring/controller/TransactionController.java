@@ -1,5 +1,6 @@
 package com.ighor.teste_tecnico_api_spring.controller;
 
+import com.ighor.teste_tecnico_api_spring.dto.entity.TransactionDto;
 import com.ighor.teste_tecnico_api_spring.dto.request.DepositRequest;
 import com.ighor.teste_tecnico_api_spring.dto.request.ExternalTransferRequest;
 import com.ighor.teste_tecnico_api_spring.dto.request.InternalTransferRequest;
@@ -28,15 +29,16 @@ public class TransactionController {
     @PostMapping("/deposit")
     public ResponseEntity<TransactionResponse> deposit(@Valid @RequestBody DepositRequest depositRequest){
         //Criamos uma Transacao e passamos a requisicao
-        Transaction newTransaction = transactionService.makeDeposit(depositRequest);
+        TransactionDto dto = transactionService.makeDeposit(depositRequest);
         TransactionResponse transactionResponse = new TransactionResponse(
-                newTransaction.getId(),
-                newTransaction.getType(),
-                newTransaction.getAmount(),
-                newTransaction.getSourceAccount().getAccountId(),
-                newTransaction.getDestinationAccount() != null ? newTransaction.getDestinationAccount().getAccountId() : null,
-                newTransaction.getTimestamp(),
-                newTransaction.getBalanceAfterOperation()
+                dto.getId(),
+                dto.getType(),
+                dto.getAmount(),
+                dto.getSourceAccountId(),
+                dto.getDestinationAccountId() != null ? dto.getDestinationAccountId() : null,
+                null,
+                dto.getTimestamp(),
+                dto.getBalanceAfterOperation()
         );
 
         return ResponseEntity.status(HttpStatus.CREATED).body(transactionResponse);
@@ -45,15 +47,16 @@ public class TransactionController {
     @PostMapping("/withdraw")
     public ResponseEntity<TransactionResponse> withdraw(@Valid @RequestBody WithdrawRequest withdrawRequest){
         //Criamos uma Transacao e passamos a requisicao
-        Transaction newTransaction = transactionService.makeWithdrawal(withdrawRequest);
+        TransactionDto dto = transactionService.makeWithdrawal(withdrawRequest);
         TransactionResponse transactionResponse = new TransactionResponse(
-                newTransaction.getId(),
-                newTransaction.getType(),
-                newTransaction.getAmount(),
-                newTransaction.getSourceAccount().getAccountId(),
-                newTransaction.getDestinationAccount() != null ? newTransaction.getDestinationAccount().getAccountId() : null,
-                newTransaction.getTimestamp(),
-                newTransaction.getBalanceAfterOperation()
+                dto.getId(),
+                dto.getType(),
+                dto.getAmount(),
+                dto.getSourceAccountId(),
+                dto.getDestinationAccountId() != null ? dto.getDestinationAccountId() : null,
+                null,
+                dto.getTimestamp(),
+                dto.getBalanceAfterOperation()
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(transactionResponse);
     }
@@ -61,15 +64,16 @@ public class TransactionController {
     @PostMapping("/internal-transfer")
     public ResponseEntity<TransactionResponse> internalTransfer(@Valid @RequestBody InternalTransferRequest internalTransferRequest){
         //Criamos uma Transacao e passamos a requisicao
-        Transaction newTransaction = transactionService.makeInternalTransfer(internalTransferRequest);
+        TransactionDto dto = transactionService.makeInternalTransfer(internalTransferRequest);
         TransactionResponse transactionResponse = new TransactionResponse(
-                newTransaction.getId(),
-                newTransaction.getType(),
-                newTransaction.getAmount(),
-                newTransaction.getSourceAccount().getAccountId(),
-                newTransaction.getDestinationAccount() != null ? newTransaction.getDestinationAccount().getAccountId() : null,
-                newTransaction.getTimestamp(),
-                newTransaction.getBalanceAfterOperation()
+                dto.getId(),
+                dto.getType(),
+                dto.getAmount(),
+                dto.getSourceAccountId(),
+                dto.getDestinationAccountId() != null ? dto.getDestinationAccountId() : null,
+                null,
+                dto.getTimestamp(),
+                dto.getBalanceAfterOperation()
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(transactionResponse);
     }
@@ -77,15 +81,16 @@ public class TransactionController {
     @PostMapping("/external-transfer")
     public ResponseEntity<TransactionResponse> externalTransfer(@Valid @RequestBody ExternalTransferRequest externalTransferRequest){
         //Criamos uma Transacao e passamos a requisicao
-        Transaction newTransaction = transactionService.makeExternalTransfer(externalTransferRequest);
+        TransactionDto dto = transactionService.makeExternalTransfer(externalTransferRequest);
         TransactionResponse transactionResponse = new TransactionResponse(
-                newTransaction.getId(),
-                newTransaction.getType(),
-                newTransaction.getAmount(),
-                newTransaction.getSourceAccount().getAccountId(),
-                newTransaction.getDestinationAccount() != null ? newTransaction.getDestinationAccount().getAccountId() : null,
-                newTransaction.getTimestamp(),
-                newTransaction.getBalanceAfterOperation()
+                dto.getId(),
+                dto.getType(),
+                dto.getAmount(),
+                dto.getSourceAccountId(),
+                null,
+                dto.getExternalDestinationAccountNumber(),
+                dto.getTimestamp(),
+                dto.getBalanceAfterOperation()
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(transactionResponse);
     }

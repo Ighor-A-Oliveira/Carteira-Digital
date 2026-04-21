@@ -21,8 +21,7 @@ public record ExternalTransferRequest(
         @NotNull(message = "A agência não pode ser nula")
         @Size(min = 4, max = 4, message = "A agência deve ter 4 dígitos")
         String toAgency,           // codigo de agenncia na api
-        @NotNull(message = "O número da conta não pode ser nulo")
-        Long toAccountNumber,    // número da conta destino na api
+        Long externalDestinationAccountNumber, // external
         @NotNull(message = "O CPF do destinatário não pode ser nulo")
         @Size(min = 11, max = 11, message = "O CPF deve ter 11 dígitos")
         String toAccountHolderCpf // CPF do destinatário

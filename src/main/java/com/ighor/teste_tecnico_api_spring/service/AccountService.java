@@ -1,8 +1,10 @@
 package com.ighor.teste_tecnico_api_spring.service;
 
+import com.ighor.teste_tecnico_api_spring.dto.entity.AccountDto;
 import com.ighor.teste_tecnico_api_spring.dto.request.RegisterAccountRequest;
 import com.ighor.teste_tecnico_api_spring.entity.Account;
 import com.ighor.teste_tecnico_api_spring.entity.User;
+import com.ighor.teste_tecnico_api_spring.exception.UserNotFoundException;
 import com.ighor.teste_tecnico_api_spring.repository.AccountRepository;
 import com.ighor.teste_tecnico_api_spring.repository.UserRepository;
 import jakarta.transaction.Transactional;
@@ -41,7 +43,7 @@ public class AccountService {
     }
 
     @Transactional
-    public Account createAccount(RegisterAccountRequest registerAccountRequest){
+    public AccountDto createAccount(RegisterAccountRequest registerAccountRequest){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth != null ? auth.getName() : "ANÔNIMO";
 
@@ -53,7 +55,7 @@ public class AccountService {
         newAccount.setStatus(Account.AccountStatus.ACTIVE);
         //Busco o registro de User de quem esta querendo criar conta
         User user = userRepository.findByCpf(registerAccountRequest.cpf())
-                .orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+                .orElseThrow(() -> new UserNotFoundException(registerAccountRequest.cpf()));
 
         newAccount.setOwner(user);
         boolean saved = false;
@@ -76,7 +78,13 @@ public class AccountService {
             }
         }
 
-        return newAccount;
+        AccountDto dto = new AccountDto();
+        dto.setAccountNumber(newAccount.getAccountNumber());
+        dto.setBalance(newAccount.getBalance());
+        dto.setCreatedAt(newAccount.getCreatedAt());
+        dto.setStatus(newAccount.getStatus());
+
+        return dto;
     }
 
 }

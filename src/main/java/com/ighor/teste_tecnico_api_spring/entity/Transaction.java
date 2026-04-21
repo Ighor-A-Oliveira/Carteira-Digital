@@ -31,7 +31,8 @@ public class Transaction {
     @ManyToOne
     @JoinColumn(name = "destination_account_id")
     @Nullable
-    private Account destinationAccount; // pode ser null
+    private Account destinationAccount; //for internal transfer
+    private Long externalDestinationAccountNumber;
 
     private OffsetDateTime timestamp;
 

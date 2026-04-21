@@ -1,5 +1,6 @@
 package com.ighor.teste_tecnico_api_spring.service;
 
+import com.ighor.teste_tecnico_api_spring.dto.entity.TransactionDto;
 import com.ighor.teste_tecnico_api_spring.dto.request.DepositRequest;
 import com.ighor.teste_tecnico_api_spring.dto.request.ExternalTransferRequest;
 import com.ighor.teste_tecnico_api_spring.dto.request.InternalTransferRequest;
@@ -7,6 +8,8 @@ import com.ighor.teste_tecnico_api_spring.dto.request.WithdrawRequest;
 import com.ighor.teste_tecnico_api_spring.entity.Account;
 import com.ighor.teste_tecnico_api_spring.entity.Transaction;
 import com.ighor.teste_tecnico_api_spring.entity.TransactionType;
+import com.ighor.teste_tecnico_api_spring.exception.AccountNotFoundException;
+import com.ighor.teste_tecnico_api_spring.exception.DataErrorException;
 import com.ighor.teste_tecnico_api_spring.repository.AccountRepository;
 import com.ighor.teste_tecnico_api_spring.repository.TransactionRepository;
 import jakarta.transaction.Transactional;
@@ -18,6 +21,7 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 
 @Service
 public class TransactionService {
@@ -35,22 +39,22 @@ public class TransactionService {
 
 
     @Transactional
-    public Transaction makeDeposit(DepositRequest depositRequest){
+    public TransactionDto makeDeposit(DepositRequest depositRequest){
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth != null ? auth.getName() : "ANÔNIMO";
 
         //Aqui tento procurar pela conta que vai receber o deposito
         Account account = accountRepository.findById(depositRequest.fromAccountId())
-                .orElseThrow(() -> new IllegalArgumentException("Conta não encontrada"));
+                .orElseThrow(() -> new AccountNotFoundException(depositRequest.fromAccountId()));
 
         //Checa se o valor do deposito eh positivo
         if (depositRequest.amount().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("O valor do depósito deve ser positivo");
+            throw new DataErrorException("O valor do depósito deve ser positivo");
         }
 
         if (!account.getStatus().equals(Account.AccountStatus.ACTIVE)) {
-            throw new IllegalArgumentException("Conta destino não está ativa");
+            throw new DataErrorException("Conta destino não está ativa");
         }
 
         //Saldo atual da conta
@@ -76,6 +80,7 @@ public class TransactionService {
         trans.setDestinationAccount(null);
         //Definindo o saldo apos a operacao
         trans.setBalanceAfterOperation(newBalance);
+        trans.setTimestamp(OffsetDateTime.now());
 
 
         logger.info("Usuário: {}, Endpoint: {}, Data: {}, Payload: {}",
@@ -85,16 +90,17 @@ public class TransactionService {
                 depositRequest
         );
 
+        transactionRepository.save(trans);
 
+        TransactionDto dto = createTransactionDto(trans);
 
-        //retornando um objeto Transaction
-        return transactionRepository.save(trans);
+        return dto;
 
     }
 
 
     @Transactional
-    public Transaction makeWithdrawal(WithdrawRequest withdrawRequest){
+    public TransactionDto makeWithdrawal(WithdrawRequest withdrawRequest){
 
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth != null ? auth.getName() : "ANÔNIMO";
@@ -102,19 +108,19 @@ public class TransactionService {
 
         //Aqui tento procurar pela conta que vai receber o deposito
         Account account = accountRepository.findById(withdrawRequest.fromAccountId())
-                .orElseThrow(() -> new IllegalArgumentException("Conta não encontrada"));
+                .orElseThrow(() -> new AccountNotFoundException(withdrawRequest.fromAccountId()));
 
         //Checa se o valor do saque eh positivo
         if (withdrawRequest.amount().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("O valor do saque deve ser positivo");
+            throw new DataErrorException("O valor do saque deve ser positivo");
         }
 
         if (withdrawRequest.amount().compareTo(account.getBalance()) > 0) {
-            throw new IllegalArgumentException("Saldo insuficiente para realizar o saque");
+            throw new DataErrorException("Saldo insuficiente para realizar o saque");
         }
 
         if (!account.getStatus().equals(Account.AccountStatus.ACTIVE)) {
-            throw new IllegalArgumentException("Conta destino não está ativa");
+            throw new DataErrorException("Conta destino não está ativa");
         }
 
         //Saldo atual da conta
@@ -140,6 +146,7 @@ public class TransactionService {
         trans.setDestinationAccount(null);
         //Definindo o saldo apos a operacao
         trans.setBalanceAfterOperation(newBalance);
+        trans.setTimestamp(OffsetDateTime.now());
 
         logger.info("Usuário: {}, Endpoint: {}, Data: {}, Payload: {}",
                 username,
@@ -148,34 +155,40 @@ public class TransactionService {
                 withdrawRequest
         );
 
+        transactionRepository.save(trans);
 
-        //retornando um objeto Transaction
-        return transactionRepository.save(trans);
+        TransactionDto dto = createTransactionDto(trans);
+
+        return dto;
     }
 
     @Transactional
-    public Transaction makeInternalTransfer(InternalTransferRequest internalTransferRequest){
+    public TransactionDto makeInternalTransfer(InternalTransferRequest internalTransferRequest){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth != null ? auth.getName() : "ANÔNIMO";
 
+        if(internalTransferRequest.toAccountId() == null){
+            new RuntimeException("Eh preciso inserir o numero da conta que vai receber a transferencia");
+        }
+
         //Aqui tento procurar pela conta que vai receber o deposito
         Account sourceAccount = accountRepository.findById(internalTransferRequest.fromAccountId())
-                .orElseThrow(() -> new IllegalArgumentException("Conta não encontrada"));
+                .orElseThrow(() -> new AccountNotFoundException(internalTransferRequest.fromAccountId()));
 
         Account destinationAccount = accountRepository.findById(internalTransferRequest.toAccountId())
-                .orElseThrow(() -> new IllegalArgumentException("Conta não encontrada"));
+                .orElseThrow(() -> new AccountNotFoundException(internalTransferRequest.toAccountId()));
 
         //Checa se o valor do saque eh positivo
         if (internalTransferRequest.amount().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("O valor da transferencia deve ser positivo");
+            throw new DataErrorException("O valor da transferencia deve ser positivo");
         }
 
         if (internalTransferRequest.amount().compareTo(sourceAccount.getBalance()) > 0) {
-            throw new IllegalArgumentException("Saldo insuficiente para realizar a transferencia");
+            throw new DataErrorException("Saldo insuficiente para realizar a transferencia");
         }
 
         if (!destinationAccount.getStatus().equals(Account.AccountStatus.ACTIVE)) {
-            throw new IllegalArgumentException("Conta destino não está ativa");
+            throw new DataErrorException("Conta destino não está ativa");
         }
 
         //CONTA ORIGEM
@@ -214,6 +227,7 @@ public class TransactionService {
         trans.setDestinationAccount(destinationAccount);
         //Definindo o saldo apos a operacao
         trans.setBalanceAfterOperation(newBalance);
+        trans.setTimestamp(OffsetDateTime.now());
 
 
         logger.info("Usuário: {}, Endpoint: {}, Data: {}, Payload: {}",
@@ -223,41 +237,45 @@ public class TransactionService {
                 internalTransferRequest
         );
 
+        transactionRepository.save(trans);
+
+        TransactionDto dto = createTransactionDto(trans);
+
         //retornando um objeto Transaction
-        return transactionRepository.save(trans);
+        return dto;
     }
 
 
     @Transactional
-    public Transaction makeExternalTransfer(ExternalTransferRequest externalTransferRequest){
+    public TransactionDto makeExternalTransfer(ExternalTransferRequest externalTransferRequest){
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         String username = auth != null ? auth.getName() : "ANÔNIMO";
 
         //Aqui tento procurar pela conta que vai receber o deposito
         Account sourceAccount = accountRepository.findById(externalTransferRequest.fromAccountId())
-                .orElseThrow(() -> new IllegalArgumentException("Conta não encontrada"));
+                .orElseThrow(() -> new AccountNotFoundException(externalTransferRequest.fromAccountId()));
 
 
         //Checa se o valor do saque eh positivo
         if (externalTransferRequest.amount().compareTo(BigDecimal.ZERO) <= 0) {
-            throw new IllegalArgumentException("O valor da transferencia deve ser positivo");
+            throw new DataErrorException("O valor da transferencia deve ser positivo");
         }
 
         if (externalTransferRequest.amount().compareTo(sourceAccount.getBalance()) > 0) {
-            throw new IllegalArgumentException("Saldo insuficiente para realizar a transferencia");
+            throw new DataErrorException("Saldo insuficiente para realizar a transferencia");
         }
 
         if (!bankService.isBankValid(externalTransferRequest.toBankCode())) {
-            throw new IllegalArgumentException("Banco inválido");
+            throw new DataErrorException("Banco inválido");
         }
 
         String cpf = externalTransferRequest.toAccountHolderCpf();
 
         if( externalTransferRequest.toAgency() == null || externalTransferRequest.toAgency().isBlank() ||
                 externalTransferRequest.toBankCode() == null || externalTransferRequest.toBankCode().isBlank() ||
-                externalTransferRequest.toAccountNumber() == null || cpf == null || externalTransferRequest.toAccountHolderCpf().length() != 11
+                externalTransferRequest.externalDestinationAccountNumber() == null || cpf == null || externalTransferRequest.toAccountHolderCpf().length() != 11
         ){
-            throw new IllegalArgumentException("Dados da conta destino inválidos");
+            throw new DataErrorException("Dados da conta destino inválidos");
         }
 
 
@@ -286,8 +304,11 @@ public class TransactionService {
         trans.setSourceAccount(sourceAccount);
         //Definindo a conta destino
         trans.setDestinationAccount(null);
+        trans.setExternalDestinationAccountNumber(externalTransferRequest.externalDestinationAccountNumber());
         //Definindo o saldo apos a operacao
         trans.setBalanceAfterOperation(newBalance);
+        trans.setTimestamp(OffsetDateTime.now());
+
 
         logger.info("Usuário: {}, Endpoint: {}, Data: {}, Payload: {}",
                 username,
@@ -297,7 +318,23 @@ public class TransactionService {
         );
 
 
-        //retornando um objeto Transaction
-        return transactionRepository.save(trans);
+        transactionRepository.save(trans);
+
+        TransactionDto dto = createTransactionDto(trans);
+        dto.setExternalDestinationAccountNumber(externalTransferRequest.externalDestinationAccountNumber());
+
+        return dto;
+    }
+
+    private TransactionDto createTransactionDto(Transaction trans){
+        TransactionDto dto = new TransactionDto();
+        dto.setId(trans.getId());
+        dto.setType(trans.getType());
+        dto.setAmount(trans.getAmount());
+        dto.setSourceAccountId(trans.getSourceAccount() != null ? trans.getSourceAccount().getAccountId() : null);
+        dto.setDestinationAccountId(trans.getDestinationAccount() != null ? trans.getDestinationAccount().getAccountId() : null);
+        dto.setTimestamp(trans.getTimestamp());
+        dto.setBalanceAfterOperation(trans.getBalanceAfterOperation());
+        return dto;
     }
 }

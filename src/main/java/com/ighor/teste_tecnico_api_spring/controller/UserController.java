@@ -1,6 +1,7 @@
 package com.ighor.teste_tecnico_api_spring.controller;
 
 import com.ighor.teste_tecnico_api_spring.config.TokenConfig;
+import com.ighor.teste_tecnico_api_spring.dto.entity.UserDto;
 import com.ighor.teste_tecnico_api_spring.dto.request.LoginRequest;
 import com.ighor.teste_tecnico_api_spring.dto.request.RegisterUserRequest;
 import com.ighor.teste_tecnico_api_spring.dto.response.LoginResponse;
@@ -45,29 +46,7 @@ public class UserController {
     @PostMapping("/login")
     //Recebe e valida o JSON do login
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest loginRequest){
-        //Cria o token de autenticação interno do Spring
-        //Spring Security só aceita login no formato UsernamePasswordAuthenticationToken
-        UsernamePasswordAuthenticationToken userAndPass = new UsernamePasswordAuthenticationToken(loginRequest.email(), loginRequest.password());
-        //Autentica no Spring Security:
-        //Busca o usuário no banco (UserDetailsService)
-        //Compara a senha com BCrypt (PasswordEncoder)
-        //se estiver certo: retorna um objeto Authentication
-        //se estiver errado: lança BadCredentialsException
-        Authentication authentication = authenticationManager.authenticate(userAndPass);
-
-        //Recupera o usuário autenticado do banco de dados
-        User user = (User) authentication.getPrincipal();
-        //Gera o JWT para o usuário logado
-        String token = tokenConfig.generateToken(user);
-
-        logger.info("Usuário: {}, Endpoint: /auth/login, Data: {}, Payload: {}",
-                loginRequest.email(),
-                LocalDateTime.now(),
-                loginRequest);
-        //
-        //Retorna o token no body
-        //retorna uma resposta HTTP 200 (OK) contendo um objeto JSON com o token dentro
-        return ResponseEntity.ok(new LoginResponse(token));
+        return ResponseEntity.ok(userService.loginUser(loginRequest));
     }
 
     @PostMapping("/register")
@@ -76,18 +55,13 @@ public class UserController {
     public ResponseEntity<RegisterUserResponse> register(@Valid @RequestBody RegisterUserRequest userRequest){
 
 
-        User newUser = userService.createUser(userRequest);
-
+        UserDto dto = userService.createUser(userRequest);
 
         RegisterUserResponse response = new RegisterUserResponse(
-                newUser.getName(),
-                newUser.getEmail(),
-                newUser.getCpf()
+                dto.getName(),
+                dto.getEmail(),
+                dto.getCpf()
         );
-
-
-        //Salva no banco de dados
-        //userRepository.save(newUser);
 
 
         //Retorna uma resposta HTTP 201 (Created)

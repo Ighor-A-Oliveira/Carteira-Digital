@@ -1,5 +1,6 @@
 package com.ighor.teste_tecnico_api_spring.controller;
 
+import com.ighor.teste_tecnico_api_spring.dto.entity.AccountDto;
 import com.ighor.teste_tecnico_api_spring.dto.request.RegisterAccountRequest;
 import com.ighor.teste_tecnico_api_spring.dto.response.RegisterAccountResponse;
 import com.ighor.teste_tecnico_api_spring.entity.Account;
@@ -28,16 +29,14 @@ public class AccountController {
     @PostMapping("/register")
     public ResponseEntity<RegisterAccountResponse> createAccount(@Valid @RequestBody RegisterAccountRequest accountRequest){
         //joga a requisicao com os dados no service para cria a nova conta
-        Account createdAccount = accountService.createAccount(accountRequest);
+        AccountDto dto = accountService.createAccount(accountRequest);
         //Agora usamos a nova conta para criar uma response
         RegisterAccountResponse response = new RegisterAccountResponse(
-                String.valueOf(createdAccount.getAccountNumber()),
-                createdAccount.getBalance(),
-                createdAccount.getStatus(),
-                createdAccount.getCreatedAt()
+                String.valueOf(dto.getAccountNumber()),
+                dto.getBalance(),
+                dto.getStatus(),
+                dto.getCreatedAt()
         );
-
-
 
 
         //Retorna uma resposta HTTP 201 (Created)
