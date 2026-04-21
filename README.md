@@ -18,6 +18,7 @@ Projeto construído com boas práticas de desenvolvimento backend, arquitetura e
 - 📦 Containerização com Docker e Docker Compose
 - 📊 Auditoria com logs estruturados
 - ✅ Validações de regras de negócio (saldo, dados, consistência)
+- 🛡️ Tratamento global de erros com `@RestControllerAdvice`
 
 
 ## 🏗️ Arquitetura
@@ -35,6 +36,26 @@ A aplicação segue o padrão de arquitetura em camadas:
 - Autenticação via JWT
 - Refresh token com rotação
 - Proteção de rotas com Spring Security
+  
+
+## 🛡️ Tratamento de Erros
+
+A aplicação possui um `GlobalExceptionHandler` com `@RestControllerAdvice` que intercepta e padroniza todas as respostas de erro da API.
+
+Erros tratados:
+- Validações de `@RequestBody` (`@Valid`) → `422 Unprocessable Entity`
+- Validações de `@RequestParam` e `@PathVariable` → `400 Bad Request`
+- Regras de negócio (`IllegalArgumentException`) → `400 Bad Request`
+- Recursos não encontrados (ex: conta, usuário) → `404 Not Found`
+- Erros genéricos não mapeados → `500 Internal Server Error`
+
+Exemplo de resposta de erro:
+```json
+{
+  "status": 400,
+  "message": "Saldo insuficiente"
+}
+```
 
 
 ## Funcionalidades implementadas
@@ -101,8 +122,8 @@ spring.jpa.properties.hibernate.default_schema=public
 | Método | Rota                                   | Descrição                              | Auth     |
 |--------|----------------------------------------|----------------------------------------|----------|
 | **POST** | `/user/register`                     | Cadastra usuário                       | Pública  |
-| **POST** | `/user/login`                        | Login → retorna JWT + refresh token    | Pública  |
 | **POST** | `/account/register`                  | Cria conta bancária (Bom fazer logo apos criar Usuario)                   | JWT      |
+| **POST** | `/user/login`                        | Login → retorna JWT + refresh token    | Pública  |
 | **POST** | `/transaction/deposit`               | Depósito                               | JWT      |
 | **POST** | `/transaction/withdraw`              | Saque                                  | JWT      |
 | **POST** | `/transaction/internal-transfer`     | Transferência interna                  | JWT      |
@@ -131,7 +152,7 @@ spring.jpa.properties.hibernate.default_schema=public
 ```
 
 ### Login com a Conta 
-(Depois tem logar tem que colocar o JWT Token not header da request)
+(Depois de logar tem que colocar o JWT Token no header da request, bearer <token>)
 ```json
 {
   "email": "usuario@email.com",
