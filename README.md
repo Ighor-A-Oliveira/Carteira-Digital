@@ -172,7 +172,7 @@ spring.jpa.properties.hibernate.default_schema=public
 ```
 
 ### Login com a Conta 
-(Depois de logar tem que colocar o JWT Token no header da request, bearer "token")
+(Depois de logar tem que colocar o JWT Token no header da request, bearer token)
 ```json
 {
   "email": "usuario@email.com",
