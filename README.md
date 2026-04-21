@@ -130,6 +130,15 @@ spring.jpa.properties.hibernate.default_schema=public
 }
 ```
 
+### Login com a Conta 
+(Depois tem logar tem que colocar o JWT Token not header da request)
+```json
+{
+  "email": "usuario@email.com",
+  "password": "senha123"
+}
+```
+
 ### Depósito ou Saque
 ```json
 {
@@ -147,14 +156,14 @@ spring.jpa.properties.hibernate.default_schema=public
 }
 ```
 
-### Transferencia Externa
+### Transferencia Externa (O toAccountNumber)
 ```json
 {
   "fromAccountId": 2,   
   "amount": 250.00,                
   "toBankCode": "001",             
   "toAgency": "0001",              
-  "toAccountNumber": 987654,     
+  "externalDestinationAccountNumber": 98181880,     
   "toAccountHolderCpf": "11111111111" 
 }
 ```
