@@ -43,17 +43,37 @@ A aplicação segue o padrão de arquitetura em camadas:
 A aplicação possui um `GlobalExceptionHandler` com `@RestControllerAdvice` que intercepta e padroniza todas as respostas de erro da API.
 
 Erros tratados:
+- Conta não encontrada (`AccountNotFoundException`) → `404 Not Found`
+- Usuário não encontrado (`UserNotFoundException`) → `404 Not Found`
+- Erros de dados/regras de negócio (`DataErrorException`) → `400 Bad Request`
 - Validações de `@RequestBody` (`@Valid`) → `422 Unprocessable Entity`
 - Validações de `@RequestParam` e `@PathVariable` → `400 Bad Request`
-- Regras de negócio (`IllegalArgumentException`) → `400 Bad Request`
-- Recursos não encontrados (ex: conta, usuário) → `404 Not Found`
 - Erros genéricos não mapeados → `500 Internal Server Error`
 
-Exemplo de resposta de erro:
+**Erro simples:**
 ```json
 {
   "status": 400,
-  "message": "Saldo insuficiente"
+  "error": "Bad Request",
+  "message": "Saldo insuficiente",
+  "fieldErrors": [],
+  "timestamp": "2026-04-21T11:17:28.740"
+}
+```
+
+**Erro de validação:**
+```json
+{
+  "status": 422,
+  "error": "Unprocessable Entity",
+  "message": "Erro de validação nos campos",
+  "fieldErrors": [
+    {
+      "field": "amount",
+      "message": "O valor deve ser maior que zero"
+    }
+  ],
+  "timestamp": "2026-04-21T11:17:28.740"
 }
 ```
 
