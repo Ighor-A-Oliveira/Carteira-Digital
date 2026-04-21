@@ -162,7 +162,8 @@ spring.jpa.properties.hibernate.default_schema=public
   "fromAccountId": 2,   
   "amount": 250.00,                
   "toBankCode": "001",             
-  "toAgency": "0001",              
+  "toAgency": "0001", 
+  "toAccountNumber": null,             
   "externalDestinationAccountNumber": 98181880,     
   "toAccountHolderCpf": "11111111111" 
 }
